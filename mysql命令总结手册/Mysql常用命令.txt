@@ -1,0 +1,368 @@
+/*mysql视频学习的课程url:http://edu.51cto.com//lesson/id-84591.html*/
+
+注意：1.mysql数据库中很多语句单词可以简写，例如char(character),desc(describe)等等
+      2.[]中的名字可有可无，当有它时[]中的名字为索引名(字段为主键约束时不受[]名字影响)
+      3.delimiter 分隔符    用于结束mysql语句的符号,主要在存储过程和函数中的作用最能体现
+      4.mysql的变量使用格式为@var	
+tinyint(m)	/*
+smallint(m)
+mediumint(m)	   整数类型(精确值)
+int(m)			
+bigint(m)	*/
+decimal(p,s)	/*
+		   定点类型
+numeric(p,s)	*/
+float()		/*
+		   浮点类型(近似值)
+double()	*/
+char(m)		/*
+varchar(m)
+longblob	   字符串类型
+text
+longtext	*/
+date		/*
+time
+year		   日期和时间类型
+datetime		
+timestamp	*/
+
+show variables		查看数据库系统变量及其值
+select version()	查看数据库版本
+select user()	   查看用户
+select database()	当前使用数据库
+select curdate()	查看当前日期
+select curtime()	查看当前时间
+select now()	  查看当前日期+时间
+use db	  使用db数据库
+show databases	    显示所有数据库
+show tables	 显示所有表
+show charset 	 查看当前服务支持的字符集
+show engines	 查看当前服务支持的引擎
+show create table student	查看当前所建的student表的详细语句(包括所有约束和关键字)
+set names 字符集	使用字符集
+--	单行注释(-- 注意空格)
+/* */	多行注释
+create database db	创建db数据库
+create database db default character set utf8	 创建db数据库，默认字符编码utf8
+create database if not exists 'db' default character set utf8	 创建db数据库标准格式
+alter database db character set utf8		修改db数据库字符集为utf8
+
+drop database db	删除db数据库
+drop database if exists 'db'	删除db数据库标准格式 
+create table student(			/*
+id int(3) unsigned auto_increment,				 	
+name varchar(10),				创建student表,字段为id(无符号,自增长),name,age,	
+age int(3),					gender(只能是男或女默认为男),主键为id,引擎
+gender enum('男','女') default '男',		为myisam,字符编码utf-8	
+primary key(id)
+)engine=myisam default charset=utf8;	*/															
+							/*
+							   快速创建student_cp表直接
+create table student_cp select id,name from student	   插入student表数据，但此表
+							   没有相关约束键
+							*/
+create table stu like student	   创建和student一模一样的表stu,并且字段键约束也有,但没有数据
+desc student	 查看student表结构
+rename table student to student_modify	 	/*
+alter table student rename student_modify 	   修改student表名为student_modify
+alter table student rename to student_modify	*/															
+drop table if exists student			删除student表
+							     /*	
+								在student表中创建	
+insert into student(id,name) values(001,'ji'),(2,'zhang')	id为001,name为ji和
+								id为002，name为zhang的信息
+							     /*
+insert into student(id,name) select id,name from studnet	将查询的数据再次插入本表中
+						/*
+replace into student(id,name) values(8,'li')	  与insert区别是先看数据(主键的数据)是否存在,如果
+						  不存在则插入,否则更新
+						/*
+replace into student(id,name) values(001,'li')		替换id=1的数据(id必须为主键，否则相当于插入语句)
+delete table student	删除student表中的数据
+alter table student add gender varchar(10)	在student表增加gender字段(此语句默认为最后面)
+alter table student add gender varchar(10) after id	在student表增加gender字段(位于id字段之后)
+alter table student add gender varchar(10) first	在student表增加gender字段(位置为第一个字段)
+alter table student drop gender     删除student表中gender字段
+							/*
+alter table student change name stuname varchar(15)	   修改表student的name字段名为stuname和
+							   字段类型（必须为同一格式的字段类型）
+							*/
+alter table student add constraint [pk] primary key(id)	   给student表的id字段增加主键
+								/*
+alter table student add constraint [uk] unique key(name)	   给student表的name字段增加唯一约束,
+	  							   (当有[uk]时唯一约束索引名为uk)
+								*/
+								
+alter table student drop index name	 给student表的name字段删除唯一约束(name字段有索引名时必须为索引名)
+								/*
+alter table student add constraint [pk] primary key(id,name)	   给student表增加复合主键
+								   (学生id,name都不同就行)
+								*/
+alter table student change id id int(10)	删除student表id字段的自增长(是删除自增长主键第一步)
+alter table student drop primary key	 删除student表的主键
+							/*
+alter table student add constraint [fk] foreign key(name)  给student表name字段增加外键关联teacher表中
+references teacher(tname)			   	   的tname字段且不能不删外键直接删除teacher表,
+							   并且也不能直接删除关联的tname数据									
+							*/
+							/*
+alter table student add constraint [fk] foreign key(name)  给student表name字段增加外键关联teacher表中
+references teacher(tname) on delete set null	   	   的tname字段,当删除tname数据后name关联为null
+							*/
+alter table student add constraint [fk] foreign key(name)  给student表name字段增加外键关联teacher表中
+references teacher(tname) on delete cascade(级联)	   的tname字段,当删除tname数据后tname被关联的
+							   name数据也会被删除
+							*/
+alter table student add constraint [fk] foreign key(name)  给student表name字段增加外键关联teacher表中
+references teacher(tname) on delete set null +		   的tname字段,当修改tname数据后name关联也自动
+on update cascade	   				   改为tname修改后的值
+							*/
+create index id_index on student(id desc)	在student表的id字段创建降序索引id_index(asc为升序)	
+alter table student drop index id_index		删除student表中id_index索引 									
+select * from student where name is null/not null	查询name为null或不为null的数据
+select * from student where age between/not between 6 and 8 	查询年龄在/不在6到8之间的学生数据
+select * from student where age<6 or age>8	查询年龄小于6大于8的学生数据
+select * from student where age in/not in (6,8)	查询年龄为/不为6和8的学生数据
+select * from student order by age desc/asc	从student表中按age降序/升序查询学生数据
+select * from student order by age desc,id asc	从student表中按age降序id升序查询学生数据
+select * from student limit 2	从student表中查询学生数据限制2条
+select * from student limit 4,2	从student表中第5条(包含第5条)开始2条学生数据
+select * from student order by age desc limit 2 	从student表中按age降序查询学生数据限制2条(从前开始限制条数)
+select * from student where gender='男' order by age desc limit 2	 查询性别为男按age降序的学生数据限制2条
+select * from student order by rand() limit 2	从student表中按随机查询学生数据限制2条(每次执行结果都可能不同)
+select * from db.t	从db数据库的t表查询数据(跨库查询)
+avg()平均值		/*
+count()个数
+max()最大值	   	mysql聚合函数:
+min()最小值
+sum()总数		*/
+select avg(age) from student	查询student表中平均age(当age值为null时不在计算之内)
+select 聚合函数 from student
+select age,count(*) 总数 from student group by age		从student表中查询name,总数 按age分组排序
+							        /*
+select age,count(*) from student group by age having age>10	  从student表中查询name,count(*)按age分组排序
+								  筛选age(聚合后的age)大于10数据
+								*/
+select * from wehre 条件 group by 分组 having 分组条件 order by 排序 limit 限制行数 	一条完整的查询语句顺序	
+select distinct name from student	从student表中查询不同的name字段的数据	
+select name,gender,age where gender='男' union select name,gender,age where gender='女'	合并查询消除重复
+										/*
+										   从student表和teacher表中查询学生
+select s.id,s.name,s.age,t.name from student s,teacher t where s.tid=t.id	   的id,name,age和老师的name(等值多
+										   表查询)
+										/*
+										/*
+										   从student表和teacher表中查询学生
+select s.id,s.name,s.age,t.name from student s join teacher t on s.tid=t.id  	   的id,name,age和老师的name(左连接
+										   多表查询)
+										/*
+										   /*
+										      从student表和teacher表中查询学生
+select s.id,s.name,s.age,t.name from student s left join teacher t on s.tid=t.id      的id,name,age和老师的name(左连接
+										      多表查询)
+										   /*
+delete from student	删除student表所有记录
+delete from student where name='ji'	删除student表name为ji的记录
+truncate table student	  清空student表的记录(不能加条件判断,只保留表的结构)	
+update student set age=23 where name='ji'	在studentb表中把name为ji的学生的age的值修改为23
+lentth('string')	string字节个数
+char_length('string')	string字符个数
+
+mysql常用函数:
+length('string')	string所占字节长度
+char_length('string')	string的字符个数
+select length('China中国'),char_length('China中国') 	结果:9  7
+rand()	 0-1之间的随机小数
+round(4.5)	四舍五入
+concat(2,3,'w')	   字符连接函数(数字当做字符处理),结果为23w
+select concat('年龄:',age,'岁') from student
+concat_ws('-',2,3,'w')	字符连接函数(数字当做字符处理),分隔符为-结果为2-3-w
+repeat('abc',2)		重复函数,重复字符abc 2次,结果为abcabc
+space(3)	产生空格函数,产生3个空格的字符串
+date_add(now(),interval 10 day)		从现在开始10天后日期
+date_add(now(),interval -10 day)	从现在开始10天前日期
+date_add(now(),interval 10 week)	从现在开始10周后日期
+date_add(now(),interval 10 minute)	从现在开始10分钟后日期
+datediff('2017-4-22','2017-4-20')	两个日期相差天数(第一参数减去第二参数),结果为2
+timestampdiff(hour,'2017-4-22 12:0:0','2017-4-20 12:0:0')	两个日期相差小时数(第二参数减去第一参数),结果为48
+date_format(now(),'%y年%m月%d日%h时%i分%s秒')	现在时间用此格式显示出来(日期格式化)
+upper('a') 	a转换为大写
+lower('A')	A转换为小写
+left('string',3)	从string左侧取3个字符
+right(str,length)	从字符右侧取length个字符
+mid(str,position,length)	从位置position开始截取length个字符
+select upper('HenShuai'),lower('HenChou'),left('henqiang',3),right('henruo',3),mid('zhendehenlihai',7,5)
+ifnull(参数1，参数2)	如果第一个参数为null,返回第二的参数的值,否则返回第二个参数的值
+select ifnull(null,'ok'),ifnull('ab','abc')
+if(exp1,exp2,exp3)	如果exp1的值为1返回exp2的结果,否则返回exp3的结果
+select if(2>1,'exp1','exp2'),if(0,'exp1','exp2')
+sha1(str)	给str进行sha1加密得到40位密文字符串	
+md5(str)	给str进行md5加密得到32位密文字符串
+password(str)	给str进行password加密得到41位的字符串(这是mysql的加密函数)
+uuid()		得到唯一的36位的随机字符串
+format(1246751.461,2)	数字格式化:2位小数,整数位3位(默认)一逗号,结果1,246,751.46
+inet_aton('127.0.0.1')	ip地址转换为数字(只是为了存储ip效率快,不是对ip进行进制转换)
+inet_ntoa(数字)		把数字转换为ip(inet=internet n=number a=address)
+select inet_aton('127.0.0.1'),inet_ntoa(2130706433)
+
+存储过程:
+delimiter //				/*
+create procedure simp_se(int sid int)	   定义存储过程simp_se的语句格式(参数中的in
+begin					   为传入参数)
+select * from student where id=sid;
+end //
+delimiter ;				*/
+delimiter //								/*
+create procedure simp_value(in name1 varchar(10),out name2 varchar(10))    创建存储过程simp_value的语句
+begin					   	   			   格式(参数中第一个为输入参数,
+select * into name2 from student where name=name1;			   第二个为输出参数,在不加声明时
+end //									   默认为输入参数)
+delimiter ;								*/
+call simp_se(4)	   调用simp_se存储过程,实现对student表中的id=4的学生数据的查询 
+call simp_value('ji',@value)	调用simp_value存储过程,实现ji的name并把值给传出参数@value
+select @value	查询@value的值
+drop procedure simp_se	   删除存储过程
+
+触发器:
+delimiter //							
+create trigger trgger_name after insert on student for each row		/*
+begin									   创建插入student表的每行数据时满足
+	if new.age<10 then						   插入的age小于10,触发向teenager表中
+	insert into teenager(id,name,age) values(new.id,new.name,new.age)  插入数据的触发器(向student表中插
+	end if;								   入的数据,new为关键字)
+end //
+delimiter ;		
+delimiter //								   /*						
+create trigger trgger_name1 after update on student for each row	   
+begin									      创建更新student表的每行数据时满足
+	if new.age>=10 then						      插入的age大于等于10,触发在teenager表中
+	delete from teenager where id=new.id;				      删除此学生数据,否则在teenager中更新或				
+	else						   		      插入数据(replace插入语句:存在时更新,不
+	replace into teenager(id,name,age) values(new.id,new.name,new.age)    存在则插入,主要看主键字段数据是否存在)
+	end if;								      
+end //
+delimiter ;								    */
+delimiter //								   /*						
+create trigger trgger_name2 after delete on student for each row	      用old.id关键字是因为在student表中所要删除的
+begin									      数据已经存在
+	delete from teenager where id=old.id
+end //
+delimiter ;								    */
+drop trigger triger_name	删除触发器
+
+自定义函数:
+delimiter //				/*
+create function function_name(s int)	   创建一个判断成绩等级的自定义函数
+return varchar(10)
+begin
+declare str varchar(10) default '补考';
+if s>=90 then
+set str='优秀';
+elseif s>=80 then
+set str='良好';
+elseif s>=70 then
+set str='一般';
+elseif s>=60 then
+set str='及格';
+end if
+return str;
+end //
+delimiter				*/
+select id,name,score,function_name(score) from student	查询学生数据,但调用了自定义函数
+drop function function_name	删除自定义函数
+
+事件:
+show variables like 'event_scheduler'	   查看事件功能是否开启 
+set global event_scheduler=on/off	开启/关闭事件功能
+delimiter //						/*
+create event event_name on schedule every 10 second 	   创建事件event_name在时间事件中每10秒
+do 							   执行下面插入3条语句的操作
+begin 				
+insert into teacher(tid,name,age) values(1,'ji',15);
+insert into teacher(tid,name,age) values(2,'ji',15);
+insert into teacher(tid,name,age) values(3,'ji',15);
+end //
+delimiter ;						/*
+drop event event_name	删除事件
+alter event event_name disable     禁用event_name事件
+alter event event_name enable     启用event_name事件
+
+用户管理与权限:
+select user,password,host from mysql.user	查看mysql的所用账户信息(我的mysql版本没有password字段)
+set password for root@localhost=password('123')	    设置root@localhost用户的密码
+set password=password('123')	设置当前用户的密码
+set passwor=password('')	设置当前用户的密码为空(即没有密码)
+						/*
+create user admin identified by 'password'	   创建用户名为admin主机默认为%(可以让其他电脑访问数据库)
+						   密码为password的用户
+						*/
+mysql -h 主机 -u 用户名 -p 密码		mysql登录账户的格式
+grant all privileges on *.* to 'aa'@'%' identified by 'aa123'	建立账户aa,任何主机可以使用,密码是aa123(在没有这个账户时候)
+grant all privileges on *.* to 'aa'@'%'	 只授予在所有库所有表忠的权限
+revoke all privileges on *.* from 'aa'@'%'	删除在所有库所有表中的权限
+drop user 'admin'@'%'	删除用户			/*
+create view view_name as select id,name from student	创建视图(只有数据的定义不包含数据,依赖其它表,不是真正意义上的数据表),
+							得到student表id,name的查新结果 
+							*/
+drop view view_name	删除视图
+
+数据库备份与恢复:
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -uroot -p密码 -A(所有数据库) >f:/all.sql	备份全部数据库到f盘的all.sql文件
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -uroot -p密码 -A(所有数据库) <f:/all.sql	把备份的数据库数据导入到数据库中
+source f:\all.sql	在mysql中的导入语句
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 --databases db1 db2 >f:/all.sql	备份数据库db1,bd2到f盘的all.sql文件
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 db1 t1 t2 >f:/all.sql	备份数据库db1的表t1,t2的数据和结构到f盘的all.sql文件
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 db1 t1 t2 -d>f:/all.sql	
+备份数据库db1的表t1,t2的结构到f盘的all.sql文件
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 db1 t1 t2 -t>f:/all.sql	备份数据库db1的表t1,t2的数据到f盘的all.sql文件
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 db1 -d>f:/all.sql	只备份db1数据库所有表的结构
+d:\wamp64\mysql\mysql 5.7\bin>(目录)mysqldump -hlocalhost -uroot -p密码 db1 -t>f:/all.sql	只备份db1数据库所有表的数据
+								/*
+mysqlimport -uroot db f:/stu_date.txt --fields-terminated-by+	   f:/stu_date.txt文件中的学生数据批量导入到db数据库中(可能有错误,需要看书)
+=,--fields-optionally-enclosed-by=--lines-terminated-by=\r\n	   (fields-terminated-by为字段终止,fields-optionally-enclosed-by为字段可选地封闭,
+								   lines-terminated-by为行终止)
+								*/
+									/*
+select * into outfile 'f:/stu_date.txt' fields terminated+  	           把student表中age大于30的学生数据导入到f:/stu_date.txt文件中
+by '\,' lines terminated by '\r\n' from student where age>30		   (f:/stu_date.txt的路径为secure_file_priv变量下的路径)
+									*/
+							/*
+load date infile 'f:/stu_date.txt' into table student+	   把f:/stu_date.txt文件中的学生数据导入到student表中(f:/stu_date.txt的路径
+fields terminated by '\t' lines terminated by '\n'	   为secure_file_priv变量下的路径)
+							*/
+repait table student 	修复student表(有表但查不出来)	
+optimiza table student	 优化student表(收回闲置的数据库空间)
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   									      
+										   
+
+					
+
