@@ -1,0 +1,12 @@
+sudo apt install python3-pip  //用pip3安装ss
+pip3 install --upgrade pip	//更新pip3
+vim /usr/bin/python3	//修改这个文件，解决pip3的main的bug
+pip3 install setuptools 	//安装依赖，解决 Command "python setup.py egg_info" failed with error code的错误
+pip3 install ss的包		//我的git上有
+vim /etc/shadowsocks.json	//创建ss的json配置
+
+
+ssserver -c /etc/shadowsocks.json -d start	//运行ss
+最后设置让shadowsocks.json开机自启动:
+vim /etc/rc.local
+在末尾加上ssserver -c /etc/shadowsocks.json -d start
